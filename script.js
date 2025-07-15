@@ -1,36 +1,38 @@
 let game = (function() {
     let turn;
-    let dimension = 3;
-    let arr = [
-        [-1, -1, -1],
-        [-1, -1, -1],
-        [-1, -1, -1]
-    ];
+    const dimension = window.prompt("Input the number of grid on each side.");
+    const numPlayer = window.prompt("Input the nuhmber of players (1 or 2)");
 
     function start(){
-        let choice = -1;
         turn = 0;
-        let board = createBoard(2);
+        let board = createBoard(numPlayer, dimension);
         let end = false;
 
         while(!end){
-            console.log(arr);
-            const input = window.prompt("Input index of your choice", "");
-            console.log(input[0]);
-            console.log(input[1]);
-            board.arrPlayer[turn].choose(input[0], input[1]);
-            end = hasWon(board.arrPlayer[turn], input);
+            board.printGrid();
+            let input;
+            if(board.playerGetIndex(turn).getType() === "player"){
+                input = window.prompt("Input index of your choice", "");                
+            }
+            
+            else{
+                input = "--";
+            }
+
+            input = board.playerGetIndex(turn).choose(input[0], input[1]);
+            end = hasWon(board.playerGetIndex(turn), input, board);
             nextTurn();
         }
+
+        board.printGrid();
     }
     
     function nextTurn(){
         turn++;
         turn = turn % 2;
-        console.log(turn);
     }
 
-    function hasWon(player, index){
+    function hasWon(player, index, board){
         let ydir = [1, 1, 0, -1];
         let xdir = [0, 1, 1, 1];
         const xindex = Number(index[0]);
@@ -45,26 +47,31 @@ let game = (function() {
                 xtemp = (xdir[i]*direction + xindex);
                 ytemp = (ydir[i]*direction + yindex);
 
-                if(xtemp < 0 || xtemp >= 3 || ytemp < 0 || ytemp >= 3){
+                console.log(xtemp);
+                console.log(ytemp);
+                if(xtemp < 0 || xtemp >= dimension || ytemp < 0 || ytemp >= dimension){
                     //checking for out of bounds
                     direction = -1;
                     continue;
                 }
 
-                else if(arr[xtemp][ytemp] === id){
-                    if((xdir[i]*2*direction + xindex) >= 0 && (xdir[i]*2*direction + xindex) < 3 && 
-                        (ydir[i]*2*direction + yindex) >= 0 && (ydir[i]*2*direction + yindex) < 3 &&
-                        (arr[(xdir[i]*2*direction + xindex)][(ydir[i]*2*direction + yindex)] === id)){
+                else if(board.getGrid(xtemp, ytemp) === id){
+                    console.log(`xindex: ${ytemp}`);
+                    console.log(`yindex: ${xtemp}`);
+
+                    if((xdir[i]*2*direction + xindex) >= 0 && (xdir[i]*2*direction + xindex) < dimension && 
+                        (ydir[i]*2*direction + yindex) >= 0 && (ydir[i]*2*direction + yindex) < dimension &&
+                        (board.getGrid(xdir[i]*2*direction + xindex, ydir[i]*2*direction + yindex) === id)){
                         //Go one more beyond to check that
                         return true;
                     }
 
-                    else if((xdir[i] * -1 * direction + xindex) >= 0 && (xdir[i] * -1 * direction + xindex) < 3 && 
-                            (ydir[i]*-1 * direction + yindex) >= 0 && (ydir[i]*-1 * direction+ yindex) < 3
-                            && (arr[xdir[i]*-1*direction + xindex][ydir[i]*-1*direction + yindex]) === id){
+                    else if((xdir[i] * -1 * direction + xindex) >= 0 && (xdir[i] * -1 * direction + xindex) < dimension && 
+                            (ydir[i]*-1 * direction + yindex) >= 0 && (ydir[i]*-1 * direction+ yindex) < dimension
+                            && (board.getGrid(xdir[i]*-1*direction + xindex, ydir[i]*-1*direction + yindex) === id)){
                         //Go back one to check that
-                        console.log((xdir[i]*-1 + xindex));
-                        console.log(ydir[i]*-1 + yindex);
+                        console.log(`xindex (next): ${xdir[i]*-1*direction + xindex}`);
+                        console.log(`yindex (next): ${ydir[i]*-1*direction + yindex}`);
                         return true;
                     }
 
@@ -84,45 +91,147 @@ let game = (function() {
         return false;
     }
 
-    function createBoard(numPlayer){
+    function createBoard(numPlayer, dimension){
         let arrPlayer = [];
+        let boardArr = [];
+
+        function createGrid(dimension){
+            for(let i = 0; i < dimension; i++){
+                let temp = [];
+                for(let j = 0; j < dimension; j++){
+                    temp.push(-1);
+                }
+                boardArr.push(temp);
+            }
+        }
 
         function player(id){
+            const type = "player";
+
             function choose(xindex, yindex){
-                console.log(`Player id: ${id}`);
-                arr[xindex][yindex] = id;
+                return changeGrid(xindex, yindex, id);
             }
 
             function getID(){
                 return id;
             }
 
+            function getType(){
+                return type;
+            }
+
             return{
                 choose,
                 getID,
+                getType,
             }
         }
 
-        for(let i = 0; i < numPlayer; i++){
-            arrPlayer.push(player(i));
+        function cp(id){
+            const type = "cp";
+
+            function choose(xindex, yindex){
+                //let changed = false;
+                const available = getAvailable();
+                // available.forEach(element => {
+                //     if(hasWon(arrPlayer[1], element, board)){
+                //         xindex = element[0];
+                //         yindex = element[1];
+                //         changed = true;
+                //     }
+                // });
+
+                // if(!changed){
+                console.log(available[0][1]);
+                xindex = available[0][0];
+                yindex = available[0][1];
+                // }
+
+                return changeGrid(xindex, yindex, id);
+            }
+
+            function getID(){
+                return id;
+            }
+
+            function getType(){
+                return type;
+            }
+            
+            return{
+                choose,
+                getID,
+                getType,
+            }
         }
+
+        function playerGetIndex(index){
+            return arrPlayer[index];
+        }
+
+        function changeGrid(xindex, yindex, id){
+            if(boardArr[xindex][yindex] === -1){
+                boardArr[xindex][yindex] = id;
+            }
+
+            else{
+                console.log("This grid is taken. Choose another one.");
+            }
+
+            return xindex.toString()+yindex.toString();
+        }
+
+        function printGrid(){
+            console.log(boardArr);
+        }
+
+        function getGrid(xindex, yindex){
+            return boardArr[xindex][yindex];
+        }
+
+        function getAvailable(){
+            let result = [];
+            for(let i = 0; i < dimension; i++){
+                for(let j = 0; j < dimension; j++){
+                    if(boardArr[i][j] === -1){
+                        result.push(`${i}${j}`);
+                    }
+                }
+            }
+            return result;
+        }
+
+        function declarePlayers(numPlayer){
+            for(let i = 0; i < numPlayer; i++){
+                arrPlayer.push(player(i));
+            }
+
+            if(numPlayer == 1){
+                arrPlayer.push(cp(1));
+            }
+        }
+
+        createGrid(dimension);
+        declarePlayers(numPlayer);
+
+        console.log(`Player: ${arrPlayer}`);
+        console.log(`Player 1: ${arrPlayer[0]}`);
+        console.log(`Player 2: ${arrPlayer[1]}`);
+
 
         return{
-            arrPlayer,
+            playerGetIndex,
+            printGrid,
+            getGrid,
         }
     }
 
-    function showResult(){
-        console.log(arr);
-    }
     return{
         start,
-        showResult,
     }
 })();
 
 game.start();
-game.showResult();
 
 
 
