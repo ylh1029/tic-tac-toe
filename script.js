@@ -7,32 +7,40 @@ let game = (function() {
         let board = createBoard(numPlayer, dimension);
         let end = false;
 
-        while(!end){
-            // board.printGrid();
-            let input;
-            if(board.playerGetIndex(turn).getType() === "player"){
-                const available = board.getAvailable();
-                available.forEach(element => {
-                    domControl.clickEvent(element);
-                });
-            }
-            
-            else{
-                input = "--";
+        function gameLoop(){
+            if(board.playerGetIndex(turn).getType() === "cp"){
+                const move = board.playerGetIndex(turn).choose();
+                domControl.applyChange(turn, move[0], move[1], dimension);
+                end = hasWon(board.playerGetIndex(turn), move, board, dimension);
+
+                if(!end){
+                    nextTurn();
+                    gameLoop();
+                }
             }
 
-            input = board.playerGetIndex(turn).choose(input[0], input[1]);
-            domControl.applyChange(turn, input[0], input[1], dimension);
-            end = hasWon(board.playerGetIndex(turn), input, board, dimension);
-            nextTurn();
+            else{
+                const available = board.getAvailable();
+                domControl.awaitClick(available, dimension, (input) => {
+                    const move = board.playerGetIndex(turn).choose(input[0], input[1]);
+                    domControl.applyChange(turn,move[0], move[1], dimension);
+                    end = hasWon(board.playerGetIndex(turn), move, board, dimension);
+
+                    if(!end){
+                        nextTurn();
+                        gameLoop();
+                    }
+                })
+            }
         }
 
-        // board.printGrid();
+        gameLoop();
     }
     
     function nextTurn(){
         turn++;
         turn = turn % 2;
+        domControl.changePlayer(turn);
     }
 
     function hasWon(player, index, board, dimension){
@@ -315,23 +323,25 @@ let domControl = (function() {
             status[1].textContent = "Player 2's turn";
         }
 
-        status[0].style.display = "none";
-        status[1].style.display = "none";
+        status[0].style.color = "black";
+        status[1].style.color = "#F5F3DF";
 
-        let boxes = document.querySelectorAll(".box");
+        let boxes = domControl.getGrid();
         console.log(boxes[0]);
         while(boxes[0] != undefined){
             console.log("hello");
             boxes[0].remove();
-            boxes = document.querySelectorAll(".box");
+            boxes = domControl.getGrid();
         }
 
         const board = getID("board");
         board.style.gridTemplateColumns = `repeat(${dimension}, 1fr)`;
+        let id = 0;
         for(let i = 0; i < dimension; i++){
             for(let j = 0; j < dimension; j++){
                 const box = document.createElement("div");
-                box.classList.add("box");
+                box.classList.add(`box`);
+                box.id = id++;
                 if(i === 0){
                     box.classList.add("top");
                 }
@@ -355,7 +365,7 @@ let domControl = (function() {
     };
 
     function applyChange(turn, xindex, yindex, dimension){
-        const box = document.querySelectorAll(".box");
+        const box = domControl.getGrid();
         const side = (628-28)/dimension;
         let image = document.createElement("img");
         if(turn == 1){
@@ -378,8 +388,33 @@ let domControl = (function() {
         box[(Number(xindex)*Number(dimension)+Number(yindex))].append(image);
     }
 
-    function clickEvent(index){
+    function awaitClick(available, dimension, callback){
+        const box = domControl.getGrid();
+
+        const handleClick = (e) => {
+            const id = parseInt(e.target.id);
+            const x = Math.floor(id / dimension);
+            const y = id % dimension;
+            available.forEach(a => {
+                const ax = parseInt(a[0]);
+                const ay = parseInt(a[1]);
+                if(x === ax && y === ay){
+                    box.forEach(element => element.removeEventListener("click", handleClick));
+                    callback([x,y]);
+                }
+            })
+        }
         
+        box.forEach(element => {
+            element.addEventListener("click", handleClick)
+        });
+    }
+
+    function changePlayer(turn){
+        console.log(turn);
+        const status = getGameStatus();
+        status[turn].style.color = "black";
+        status[(turn+1)%2].style.color = "#F5F3DF";
     }
 
     function load(){
@@ -391,7 +426,9 @@ let domControl = (function() {
         createBox,
         getID,
         applyChange,
-        clickEvent
+        awaitClick,
+        getGrid,
+        changePlayer,
     }
 })();
 
