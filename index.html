@@ -8,7 +8,44 @@
     <title>Tic Tac Toe</title>
 </head>
 <body>
-    Check the console for the overall gameflow!
+    <h1>Play Tic Tac Toe!</h1>
+    <span><button id="start" type="button">Start</button></span>
+    <div class="modal">
+        <dialog>
+            <h2>Start a new Game!</h2>
+            <form method="dialog">
+                <ion-icon id="close" name="close-outline"></ion-icon>
+                <div class="row">
+                    <p>How many players?</p>
+                    <input type="radio" name="players" id="players" value="1">
+                    <label for="1">1</label>
+                    <input type="radio" name="players" id="players" value="2">
+                    <label for="2">2</label>                    
+                </div>
+
+                <div class="row">
+                    <label for="dimension"><p>How many grids per side?</p></label>
+                    <input id="dimension" type="number" placeholder="3">
+                </div>
+                <button id="new">Start</button>
+            </form>
+        </dialog>
+    </div>
+
+    <div class="container">
+        <div class="box top left"></div>
+        <div class="box top"></div>
+        <div class="box top right"></div>
+        <div class="box left"></div>
+        <div class="box"></div>
+        <div class="box right"></div>
+        <div class="box bottom left"></div>
+        <div class="box bottom"></div>
+        <div class="box bottom right"></div>
+    </div>
+
     <script src="script.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </body>
 </html>

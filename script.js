@@ -1,9 +1,7 @@
 let game = (function() {
     let turn;
-    const dimension = window.prompt("Input the number of grid on each side.");
-    const numPlayer = window.prompt("Input the nuhmber of players (1 or 2)");
 
-    function start(){
+    function start(numPlayer, dimension){
         turn = 0;
         let board = createBoard(numPlayer, dimension);
         let end = false;
@@ -20,7 +18,7 @@ let game = (function() {
             }
 
             input = board.playerGetIndex(turn).choose(input[0], input[1]);
-            end = hasWon(board.playerGetIndex(turn), input, board);
+            end = hasWon(board.playerGetIndex(turn), input, board, dimension);
             nextTurn();
         }
 
@@ -32,7 +30,7 @@ let game = (function() {
         turn = turn % 2;
     }
 
-    function hasWon(player, index, board){
+    function hasWon(player, index, board, dimension){
         let ydir = [1, 1, 0, -1];
         let xdir = [0, 1, 1, 1];
         const xindex = Number(index[0]);
@@ -47,8 +45,11 @@ let game = (function() {
                 xtemp = (xdir[i]*direction + xindex);
                 ytemp = (ydir[i]*direction + yindex);
 
-                console.log(xtemp);
-                console.log(ytemp);
+                // console.log(`Before checking xtemp: ${xtemp}`);
+                // console.log(`Before checking ytemp: ${ytemp}`);
+                // console.log(`Before checking dimension: ${dimension}`);
+
+
                 if(xtemp < 0 || xtemp >= dimension || ytemp < 0 || ytemp >= dimension){
                     //checking for out of bounds
                     direction = -1;
@@ -56,8 +57,8 @@ let game = (function() {
                 }
 
                 else if(board.getGrid(xtemp, ytemp) === id){
-                    console.log(`xindex: ${ytemp}`);
-                    console.log(`yindex: ${xtemp}`);
+                    // console.log(`xindex: ${ytemp}`);
+                    // console.log(`yindex: ${xtemp}`);
 
                     if((xdir[i]*2*direction + xindex) >= 0 && (xdir[i]*2*direction + xindex) < dimension && 
                         (ydir[i]*2*direction + yindex) >= 0 && (ydir[i]*2*direction + yindex) < dimension &&
@@ -70,8 +71,8 @@ let game = (function() {
                             (ydir[i]*-1 * direction + yindex) >= 0 && (ydir[i]*-1 * direction+ yindex) < dimension
                             && (board.getGrid(xdir[i]*-1*direction + xindex, ydir[i]*-1*direction + yindex) === id)){
                         //Go back one to check that
-                        console.log(`xindex (next): ${xdir[i]*-1*direction + xindex}`);
-                        console.log(`yindex (next): ${ydir[i]*-1*direction + yindex}`);
+                        // console.log(`xindex (next): ${xdir[i]*-1*direction + xindex}`);
+                        // console.log(`yindex (next): ${ydir[i]*-1*direction + yindex}`);
                         return true;
                     }
 
@@ -214,11 +215,6 @@ let game = (function() {
         createGrid(dimension);
         declarePlayers(numPlayer);
 
-        console.log(`Player: ${arrPlayer}`);
-        console.log(`Player 1: ${arrPlayer[0]}`);
-        console.log(`Player 2: ${arrPlayer[1]}`);
-
-
         return{
             playerGetIndex,
             printGrid,
@@ -231,8 +227,68 @@ let game = (function() {
     }
 })();
 
-game.start();
+let domControl = (function() {
+    function getGrid(){
+        return document.querySelectorAll(".box");
+    }
 
+    function getButton(){
+        return document.querySelector("button");
+    }
 
+    function getID(id){
+        return document.querySelector(`#${id}`);
+    }
 
+    function getDialog(){
+        return document.querySelector("dialog");
+    }
 
+    function modal(){
+        const dialog = getDialog();
+        const button = getButton();
+        const close = getID("close");
+        const newGame = getID("new");
+        const getDimension = getID("dimension");
+        const radio = document.querySelectorAll("#players");
+        button.addEventListener("click", () => {
+            dialog.showModal();
+        });
+
+        close.addEventListener("click", () => {
+            closeModal();
+            getDimension.value = "";
+        });
+
+        newGame.addEventListener("click", () => {
+            const dimension = getDimension.value;
+            let numPlayer;
+            radio.forEach(button => {
+                if(button.checked){
+                    numPlayer = button.value;
+                }
+            });
+            closeModal();
+            game.start(Number(numPlayer), Number(dimension));
+        });
+
+        function closeModal(){
+            dialog.close();
+            getDimension.value = "";
+            radio.forEach(button => {
+                button.checked = false;
+            });
+        };
+    }
+
+    function load(){
+        const grid = getGrid();
+        modal();
+    }
+
+    return{
+        load,
+    }
+})();
+
+domControl.load();

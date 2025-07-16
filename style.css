@@ -1,0 +1,134 @@
+*{
+    padding: 0;
+    margin: 0;
+    border: 0;
+    color: black;
+}
+
+body{
+    background-color: #F5F3DF;
+}
+
+h1{
+    text-align: center;
+    margin: 30px 0;
+    font-size: 3.3rem;
+}
+
+.container{
+    width: 628px;
+    margin-left: auto;
+    margin-right: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0px;
+}
+
+.box{
+    width: 200px;
+    height: 200px;
+    border: 7px solid black; 
+}
+
+.box.left{
+    border-left: 0px;
+}
+
+.box.right{
+    border-right: 0px;
+}
+
+.box.top{
+    border-top: 0px;
+}
+
+.box.bottom{
+    border-bottom: 0px;
+}
+
+button{
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 3px solid black;
+    font-size: 1.2em;
+}
+
+button:hover{
+    background-color: #ddd;
+    cursor: pointer;
+}
+
+span{
+    display: flex;
+    justify-content: center;
+}
+
+dialog{
+    background-color: #F5EC88;
+    padding: 20px 10px;   
+    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+dialog ion-icon{
+    position: absolute;
+    width: 45px;
+    height: 45px;
+    border-bottom-left-radius: 10px;
+    background-color: #F5D289;
+    top: 0;
+    right: 0;
+}
+
+dialog ion-icon:hover{
+    cursor: pointer;
+    color: red;
+}
+
+h2{
+    margin: 10px 5px;
+}
+
+dialog .row{
+    margin: 10px 5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    width: 330px;
+}
+
+dialog .row > label{
+    margin: 0 10px;
+}
+
+#dimension{
+    border: 2px solid #F5EC88;
+    border-radius: 5px;
+    outline: none;
+    appearance: none;
+    padding: 10px;
+}
+
+#dimension:focus{
+    border: 2px solid #F5D289;
+}
+
+dialog .row p{
+    width: 150px;
+}
+
+dialog button{
+    font-size: 1rem;
+    border: 0;
+    margin: 10px 5px;
+}
+
+dialog form{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
