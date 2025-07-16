@@ -3,14 +3,18 @@ let game = (function() {
 
     function start(numPlayer, dimension){
         turn = 0;
+        domControl.createBox(numPlayer, dimension);
         let board = createBoard(numPlayer, dimension);
         let end = false;
 
         while(!end){
-            board.printGrid();
+            // board.printGrid();
             let input;
             if(board.playerGetIndex(turn).getType() === "player"){
-                input = window.prompt("Input index of your choice", "");                
+                const available = board.getAvailable();
+                available.forEach(element => {
+                    domControl.clickEvent(element);
+                });
             }
             
             else{
@@ -18,11 +22,12 @@ let game = (function() {
             }
 
             input = board.playerGetIndex(turn).choose(input[0], input[1]);
+            domControl.applyChange(turn, input[0], input[1], dimension);
             end = hasWon(board.playerGetIndex(turn), input, board, dimension);
             nextTurn();
         }
 
-        board.printGrid();
+        // board.printGrid();
     }
     
     function nextTurn(){
@@ -182,9 +187,9 @@ let game = (function() {
             return xindex.toString()+yindex.toString();
         }
 
-        function printGrid(){
-            console.log(boardArr);
-        }
+        // function printGrid(){
+        //     console.log(boardArr);
+        // }
 
         function getGrid(xindex, yindex){
             return boardArr[xindex][yindex];
@@ -212,13 +217,14 @@ let game = (function() {
             }
         }
 
-        createGrid(dimension);
         declarePlayers(numPlayer);
+        createGrid(dimension);
 
         return{
             playerGetIndex,
-            printGrid,
             getGrid,
+            createGrid,
+            getAvailable, 
         }
     }
 
@@ -244,6 +250,10 @@ let domControl = (function() {
         return document.querySelector("dialog");
     }
 
+    function getGameStatus(){
+        return document.querySelectorAll(".gameStatus");
+    }
+
     function modal(){
         const dialog = getDialog();
         const button = getButton();
@@ -262,12 +272,23 @@ let domControl = (function() {
 
         newGame.addEventListener("click", () => {
             const dimension = getDimension.value;
-            let numPlayer;
+            let numPlayer = -1;
             radio.forEach(button => {
                 if(button.checked){
                     numPlayer = button.value;
                 }
             });
+
+            if(dimension < 3){
+                alert("Please input a dimension larger than 2.");
+                return;
+            }
+
+            if(numPlayer === -1){
+                alert("Please select the number of player.");
+                return;
+            }
+            
             closeModal();
             game.start(Number(numPlayer), Number(dimension));
         });
@@ -281,13 +302,96 @@ let domControl = (function() {
         };
     }
 
+    function createBox(numPlayer, dimension){
+        const status = getGameStatus();
+        console.log(status);
+        if(numPlayer == 1){
+            status[0].textContent = "Player's turn";
+            status[1].textContent = "Computer's turn";
+        }
+
+        else{
+            status[0].textContent = "Player 1's turn";
+            status[1].textContent = "Player 2's turn";
+        }
+
+        status[0].style.display = "none";
+        status[1].style.display = "none";
+
+        let boxes = document.querySelectorAll(".box");
+        console.log(boxes[0]);
+        while(boxes[0] != undefined){
+            console.log("hello");
+            boxes[0].remove();
+            boxes = document.querySelectorAll(".box");
+        }
+
+        const board = getID("board");
+        board.style.gridTemplateColumns = `repeat(${dimension}, 1fr)`;
+        for(let i = 0; i < dimension; i++){
+            for(let j = 0; j < dimension; j++){
+                const box = document.createElement("div");
+                box.classList.add("box");
+                if(i === 0){
+                    box.classList.add("top");
+                }
+
+                if(i === dimension-1){
+                    box.classList.add("bottom");
+                }
+
+                if (j === 0){
+                    box.classList.add("left");
+                }
+
+                if(j === dimension-1){
+                    box.classList.add("right");
+                }
+                box.style.width = `${(628-28)/dimension}px`;
+                box.style.height = `${(628-28)/dimension}px`;
+                board.append(box);
+            }
+        }
+    };
+
+    function applyChange(turn, xindex, yindex, dimension){
+        const box = document.querySelectorAll(".box");
+        const side = (628-28)/dimension;
+        let image = document.createElement("img");
+        if(turn == 1){
+            image.src = ("images/Ellipse_1.png");
+        }
+
+        else{
+            image.src = ("images/Rectangle_1.png");
+        }
+
+        image.style.height = `${side-50}px`;
+        image.style.width = `${side-50}px`;
+
+        console.log(`xindex: ${Number(xindex)}`);
+        console.log(`yindex: ${Number(yindex)}`);
+        console.log(`dimension: ${Number(dimension)}`);
+
+        console.log((Number(xindex)*Number(dimension)+Number(yindex)));
+        console.log(box[(Number(xindex)*Number(dimension)+Number(yindex))]);
+        box[(Number(xindex)*Number(dimension)+Number(yindex))].append(image);
+    }
+
+    function clickEvent(index){
+        
+    }
+
     function load(){
-        const grid = getGrid();
         modal();
     }
 
     return{
         load,
+        createBox,
+        getID,
+        applyChange,
+        clickEvent
     }
 })();
 

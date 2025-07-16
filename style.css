@@ -16,9 +16,20 @@ h1{
 }
 
 .container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.container > span{
+    font-size: 1.4em;
+    font-weight: 600;
+}
+
+#board{
     width: 628px;
-    margin-left: auto;
-    margin-right: auto;
+    height: 628px;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 0px;
@@ -28,6 +39,9 @@ h1{
     width: 200px;
     height: 200px;
     border: 7px solid black; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .box.left{
